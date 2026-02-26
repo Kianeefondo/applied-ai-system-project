@@ -104,7 +104,19 @@ If you finish early or want an extra challenge, try one of these:
 
 ## Tips for success
 
-- You do not need to solve everything. Focus on exploring and learning.  
+- You do not need to solve everything. Focus on exploring and learning.
+
+---
+
+## Reflection
+
+- The core concepts that students needed to understand here is working alongside the AI as a tool rather than a force of doing it all for yourself. We should be teaching that the AI shouldn't be doing everything for us, and understanding ways how we can use AI as a tool to best approach different software engineering concepts and proceedures.
+
+- I see students most likely struggling to start off with debugging definitely. I think definitely with larger codebases, its easy to feel overwhelmed and not sure where to start, and definitely this excersize gave us a lot of insight to best approach debugging in a healthier way with AI.
+
+- I believe AI helped a lot with identifying a lot of the bugs and mistakes that this codebase had and it narrowed a lot down to figuring out what I can do to fix. I think AI didn't really mislead, but I feel like with the amount of bugs that there were, I feel like students could feel a bit overwhelmed by thinking about how things conflict with each other and if any functions would be altered in functionality if another were to change.
+
+- One way I would guide a student is definitely start by playing around with the application first before diving deep into the code. I feel like being exposed to the code was very overwhelming at first, and the next step would be to use the AI to help us understand the codebase a lot simpler than trying to read all th code at once.
 - When confused, ask an AI assistant to explain the code or summarize behavior.  
 - Test the app often. Small experiments reveal useful clues.  
 - Treat surprising behavior as something worth investigating.  
