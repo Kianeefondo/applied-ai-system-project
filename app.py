@@ -11,6 +11,7 @@ from playlist_logic import (
     normalize_song,
     search_songs,
 )
+from playlist_ai import get_ai_playlist_advice, is_openai_configured
 
 
 def init_state():
@@ -21,6 +22,10 @@ def init_state():
         st.session_state.profile = dict(DEFAULT_PROFILE)
     if "history" not in st.session_state:
         st.session_state.history = []
+    if "ai_query" not in st.session_state:
+        st.session_state.ai_query = "Suggest a playlist for a relaxed study session."
+    if "ai_result" not in st.session_state:
+        st.session_state.ai_result = {}
 
 
 def default_songs():
@@ -374,6 +379,59 @@ def clear_controls():
         st.session_state.history = []
 
 
+def ai_controls(songs, profile):
+    """Render AI assistant controls in the sidebar."""
+    st.sidebar.header("AI Playlist Advisor")
+    st.sidebar.write(
+        "Ask the AI to recommend songs based on the current library and your mood profile."
+    )
+    st.session_state.ai_query = st.sidebar.text_area(
+        "AI prompt",
+        value=st.session_state.ai_query,
+        height=120,
+    )
+
+    if st.sidebar.button("Ask AI"):
+        st.session_state.ai_result = get_ai_playlist_advice(
+            songs,
+            profile,
+            st.session_state.ai_query,
+        )
+
+    if not is_openai_configured():
+        st.sidebar.info(
+            "OpenAI key not configured. The app will use a local fallback advisory response."
+        )
+
+
+def ai_section():
+    """Render the AI recommendation section in the main pane."""
+    st.header("AI recommendation")
+    result = st.session_state.ai_result
+    if not result:
+        st.write("Use the sidebar to ask the AI for a playlist recommendation.")
+        return
+
+    if result.get("error"):
+        st.error("AI error: " + str(result["error"]))
+
+    st.write(result.get("response", "No response available."))
+    st.write(
+        f"Confidence: {result.get('confidence', 0.0):.2f} | "
+        f"Source: {'OpenAI' if result.get('used_openai') else 'Local fallback'}"
+    )
+
+    retrieved = result.get("retrieved_songs", [])
+    if retrieved:
+        with st.expander("Retrieved songs used for context"):
+            for song in retrieved:
+                tags = ", ".join(song.get("tags", []))
+                st.write(
+                    f"- {song['title']} by {song['artist']} "
+                    f"(genre {song['genre']}, energy {song['energy']}, tags {tags})"
+                )
+
+
 def main():
     st.set_page_config(page_title="Playlist Chaos", layout="wide")
     st.title("Playlist Chaos")
@@ -387,6 +445,7 @@ def main():
     profile_sidebar()
     add_song_sidebar()
     clear_controls()
+    ai_controls(st.session_state.songs, st.session_state.profile)
 
     profile = st.session_state.profile
     songs = st.session_state.songs
@@ -399,6 +458,8 @@ def main():
     lucky_section(merged_playlists)
     st.divider()
     stats_section(merged_playlists)
+    st.divider()
+    ai_section()
     st.divider()
     history_section()
 

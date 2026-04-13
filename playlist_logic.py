@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, Optional, Tuple
 
 Song = Dict[str, object]
@@ -47,6 +48,7 @@ def normalize_song(raw: Song) -> Song:
     tags = raw.get("tags", [])
     if isinstance(tags, str):
         tags = [tags]
+    tags = [str(tag).strip().lower() for tag in tags if tag]
 
     return {
         "title": title,
@@ -69,9 +71,10 @@ def classify_song(song: Song, profile: Dict[str, object]) -> str:
 
     hype_keywords = ["rock", "punk", "party"]
     chill_keywords = ["lofi", "ambient", "sleep"]
+    tags = song.get("tags", [])
 
-    is_hype_keyword = any(k in genre for k in hype_keywords)
-    is_chill_keyword = any(k in title for k in chill_keywords)
+    is_hype_keyword = any(k in genre for k in hype_keywords) or any(k in tag for tag in tags for k in hype_keywords)
+    is_chill_keyword = any(k in genre for k in chill_keywords) or any(k in tag for tag in tags for k in chill_keywords)
 
     if genre == favorite_genre or energy >= hype_min_energy or is_hype_keyword:
         return "Hype"
@@ -121,7 +124,7 @@ def compute_playlist_stats(playlists: PlaylistMap) -> Dict[str, object]:
 
     avg_energy = 0.0
     if all_songs:
-        total_energy = sum(song.get("energy", 0) for song in hype)
+        total_energy = sum(song.get("energy", 0) for song in all_songs)
         avg_energy = total_energy / len(all_songs)
 
     top_artist, top_count = most_common_artist(all_songs)
@@ -168,10 +171,74 @@ def search_songs(
 
     for song in songs:
         value = str(song.get(field, "")).lower()
-        if value and value in q:
+        if q and value and q in value:
             filtered.append(song)
 
     return filtered
+
+
+def song_to_retrieval_text(song: Song) -> str:
+    """Format a song for retrieval context."""
+    tags = ", ".join(song.get("tags", []))
+    return (
+        f"{song.get('title', '').strip()} by {song.get('artist', '').strip()} "
+        f"(genre {song.get('genre', '')}, energy {song.get('energy', 0)}, tags {tags})"
+    )
+
+
+def compute_song_relevance(song: Song, profile: Dict[str, object], query: str) -> float:
+    """Score a song based on query and profile for retrieval."""
+    if not query:
+        return 0.0
+
+    query = query.lower().strip()
+    tokens = set(re.findall(r"\w+", query))
+    score = 0.0
+    genre = song.get("genre", "")
+    tags = song.get("tags", [])
+    energy = song.get("energy", 0)
+
+    if any(token in genre for token in tokens):
+        score += 2.0
+    if any(token in tag for tag in tags for token in tokens):
+        score += 1.5
+    if any(token in song.get("title", "").lower() for token in tokens):
+        score += 1.0
+    if any(token in song.get("artist", "").lower() for token in tokens):
+        score += 0.8
+
+    if "hype" in tokens and energy >= profile.get("hype_min_energy", 7):
+        score += 1.5
+    if "chill" in tokens and energy <= profile.get("chill_max_energy", 3):
+        score += 1.5
+    if genre == profile.get("favorite_genre", ""):
+        score += 1.0
+
+    score += max(0.0, 1.0 - abs(energy - 5) / 10.0)
+    return score
+
+
+def retrieve_relevant_songs(
+    songs: List[Song],
+    query: str,
+    profile: Dict[str, object],
+    top_k: int = 5,
+) -> List[Song]:
+    """Select the most relevant songs for an AI prompt."""
+    if not songs:
+        return []
+
+    scored_songs = [
+        (compute_song_relevance(song, profile, query), song)
+        for song in songs
+    ]
+    scored_songs.sort(key=lambda item: item[0], reverse=True)
+    selected = [song for score, song in scored_songs if score > 0.0]
+
+    if len(selected) < top_k:
+        selected = [song for _, song in scored_songs][:top_k]
+
+    return selected[:top_k]
 
 
 def lucky_pick(

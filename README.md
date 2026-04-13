@@ -1,5 +1,7 @@
 # Playlist Chaos
 
+This project started as a playlist recommendation app for Modules 1-3. Its original goal was to let users build mood-based playlists from a small song library, classify songs as Hype, Chill, or Mixed, and display those playlists with a simple Streamlit interface.
+
 Your AI assistant tried to build a smart playlist generator. The app runs, but some of the behavior is unpredictable. Your task is to explore the app, investigate the code, and use an AI assistant to debug and improve it.
 
 This activity is your first chance to practice AI-assisted debugging on a codebase that is slightly messy, slightly mysterious, and intentionally imperfect.
