@@ -1,12 +1,8 @@
-# Playlist Chaos
+# Week 8: AI-Powered Playlist Chaos
 
-This project started as a playlist recommendation app for Modules 1-3. Its original goal was to let users build mood-based playlists from a small song library, classify songs as Hype, Chill, or Mixed, and display those playlists with a simple Streamlit interface.
+Module 1: Playlist Chaos
 
-Your AI assistant tried to build a smart playlist generator. The app runs, but some of the behavior is unpredictable. Your task is to explore the app, investigate the code, and use an AI assistant to debug and improve it.
-
-This activity is your first chance to practice AI-assisted debugging on a codebase that is slightly messy, slightly mysterious, and intentionally imperfect.
-
-You do not need to understand everything at once. Approach the app as a curious investigator, work with an AI assistant to explain what you find, and make targeted improvements.
+This project started as a playlist recommendation app for Modules 1-3. This app was used to build mood-based playlists for users from a small library and classify them by moods, from Chill to Mixed, and display this list through a simple text interface. Essentially, I wanted to integrate an RAG to elevate the playlist recommendation engine, and now uses RAG to look into the song library and profile data to match to the given prompt and generate an AI-recommended playlist.
 
 ---
 
